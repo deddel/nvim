@@ -6,7 +6,7 @@ return {
       vim.cmd.colorscheme("tokyonight-night")
     end
   },
-  { "catppuccin/nvim", name = "catppuccin", lazy = true },
+  -- { "catppuccin/nvim", name = "catppuccin", lazy = true },
 
   -- =======================
   -- File Explorer
@@ -40,44 +40,45 @@ return {
   -- =======================
   {
     "neovim/nvim-lspconfig",
-    version = "0.1.7",  -- Compatible with Neovim 0.10
     dependencies = {
-      { "williamboman/mason.nvim", version = "1.8.0" },          
-      { "williamboman/mason-lspconfig.nvim", version = "1.24.0" } 
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
     },
-    config = function()
-      require("mason").setup()
-      require("mason-lspconfig").setup {
-        -- LÄGG TILL "csharp_ls" HÄR SÅ MASON INSTALLERAR DEN AUTOMATISKT
+  config = function()
+    require("mason").setup()
+
+    require("mason-lspconfig").setup {
         ensure_installed = { "lua_ls", "csharp_ls" },
         automatic_installation = false,
-      }
+    }
 
-      local lspconfig = require("lspconfig")
+    -- Capabilities for nvim-cmp
+    local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      -- Berätta för Neovim att autocomplete-menyn är redo att ta emot data
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-      -- Setup Lua LSP
-      lspconfig.lua_ls.setup {
+    -- Lua LSP
+    vim.lsp.config("lua_ls", {
         capabilities = capabilities,
         settings = {
-          Lua = {
-            diagnostics = {
-              globals = { "vim" },
-              disable = {"missing-parameters", "missing-fields"}
+            Lua = {
+                diagnostics = {
+                    globals = { "vim" },
+                    disable = { "missing-parameters", "missing-fields" },
+                },
+                workspace = {
+                    library = vim.api.nvim_get_runtime_file("", true),
+                },
             },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true),
-            }
-          }
-        }
-      }
+        },
+    })
 
-      -- ✅ AKTIVERA C# LSP HÄR
-      lspconfig.csharp_ls.setup({
+    -- C# LSP
+    vim.lsp.config("csharp_ls", {
         capabilities = capabilities,
-      })
+    })
+
+    -- Enable both language servers
+    vim.lsp.enable("lua_ls")
+    vim.lsp.enable("csharp_ls")
     end
   },
 
